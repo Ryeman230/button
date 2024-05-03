@@ -1,1 +1,42 @@
-<button>yummy
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Yummy Button</title>
+<style>
+    body {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        margin: 0;
+        background-color: #f0f0f0; /* Light gray background */
+    }
+    button {
+        padding: 20px 40px;
+        font-size: 24px;
+        background-color: red; /* Red background */
+        color: white; /* White text color */
+        border: none;
+        border-radius: 10px;
+        cursor: pointer;
+    }
+    button:hover {
+        background-color: #b30000; /* Darker red on hover */
+    }
+</style>
+</head>
+<body>
+
+<button id="yummyButton">Press Me!</button>
+
+<script>
+    const yummyButton = document.getElementById('yummyButton');
+    yummyButton.addEventListener('click', () => {
+        alert("Yummy");
+    });
+</script>
+
+</body>
+</html>
