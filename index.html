@@ -21,9 +21,12 @@
 
         // Initialize the button
         const talkButton = document.getElementById('talk');
-        talkButton.addEventListener('click', () => {
-          // Toggle the gain node between 0 and 1
-          gainNode.gain.value = gainNode.gain.value === 0 ? 1 : 0;
+        let isTalking = false;
+        talkButton.addEventListener('mousedown', () => {
+          isTalking = true;
+        });
+        talkButton.addEventListener('mouseup', () => {
+          isTalking = false;
         });
 
         // Initialize the audio output
@@ -68,6 +71,26 @@
 
         // Set up the signaling channel
         // ...
+
+        // Initialize the audio data processor
+        const audioDataProcessor = {
+          process: () => {
+            if (isTalking) {
+              // Get the audio data from the gain node
+              const audioData = new Float32Array(gainNode.numberOfChannels);
+              gainNode.getFloatTimeDomainData(audioData);
+
+              // Send the audio data to the other peer
+              dataChannel.send(Array.from(audioData));
+            }
+
+            // Request the next audio data processing
+            requestAnimationFrame(() => audioDataProcessor.process());
+          }
+        };
+
+        // Start processing the audio data
+        requestAnimationFrame(() => audioDataProcessor.process());
 
       })
       .catch(error => {
