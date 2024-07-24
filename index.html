@@ -1,71 +1,85 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Text Messaging</title>
+  <title>Calculator</title>
 </head>
 <body>
-  <div id="messages"></div>
-  <input type="text" id="messageInput" />
-  <button id="sendButton">Send</button>
+  <div id="calculator">
+    <input type="text" id="display" disabled />
+    <div id="buttons">
+      <button>7</button>
+      <button>8</button>
+      <button>9</button>
+      <button>+</button>
+      <button>4</button>
+      <button>5</button>
+      <button>6</button>
+      <button>-</button>
+      <button>1</button>
+      <button>2</button>
+      <button>3</button>
+      <button>*</button>
+      <button>0</button>
+      <button>.</button>
+      <button>=</button>
+      <button>/</button>
+      <button id="clear">C</button>
+    </div>
+  </div>
 
   <script>
-    // Initialize the message list
-    const messageList = document.getElementById("messages");
+    // Initialize the display element
+    const display = document.getElementById("display");
 
-    // Initialize the message input field
-    const messageInput = document.getElementById("messageInput");
+    // Initialize the buttons element
+    const buttons = document.getElementById("buttons");
 
-    // Initialize the send button
-    const sendButton = document.getElementById("sendButton");
+    // Initialize the clear button
+    const clearButton = document.getElementById("clear");
 
-    // Initialize the RTCPeerConnection
-    const peerConnection = new RTCPeerConnection();
+    // Initialize the current number
+    let currentNumber = "";
 
-    // Add a data channel for sending messages
-    const dataChannel = peerConnection.createDataChannel("messages");
+    // Initialize the current operation
+    let currentOperation = "";
 
-    // Set up the data channel event listeners
-    dataChannel.onmessage = event => {
-      // Add the received message to the message list
-      const messageElement = document.createElement("p");
-      messageElement.textContent = event.data;
-      messageList.appendChild(messageElement);
-    };
+    // Initialize the second number
+    let secondNumber = "";
 
-    // Set up the peer connection event listeners
-    peerConnection.onicecandidate = event => {
-      if (event.candidate) {
-        // Send the ICE candidate to the other peer
-        // ...
+    // Initialize the result
+    let result = "";
+
+    // Set up the button event listeners
+    buttons.addEventListener("click", event => {
+      const button = event.target;
+      if (button.tagName === "BUTTON") {
+        if (button.textContent === "=") {
+          // Calculate the result
+          result = eval(currentNumber + currentOperation + secondNumber);
+          display.value = result;
+        } else if (button.textContent === "C") {
+          // Clear the display
+          currentNumber = "";
+          currentOperation = "";
+          secondNumber = "";
+          result = "";
+          display.value = "";
+        } else {
+          // Add the button text to the current number
+          currentNumber += button.textContent;
+          display.value = currentNumber;
+        }
       }
-    };
+    });
 
-    peerConnection.onaddstream = event => {
-      // Add the remote stream to the page
-      const remoteVideo = document.createElement("video");
-      remoteVideo.srcObject = event.stream;
-      remoteVideo.autoplay = true;
-      document.body.appendChild(remoteVideo);
-    };
-
-    // Set up the signaling channel
-    // ...
-
-    // Set up the send button event listener
-    sendButton.addEventListener("click", () => {
-      // Get the message text
-      const messageText = messageInput.value;
-
-      // Add the message to the message list
-      const messageElement = document.createElement("p");
-      messageElement.textContent = messageText;
-      messageList.appendChild(messageElement);
-
-      // Send the message to the other peer
-      dataChannel.send(messageText);
-
-      // Clear the message input field
-      messageInput.value = "";
+    // Set up the clear button event listener
+    clearButton.addEventListener("click", () => {
+      // Clear the display
+      currentNumber = "";
+      currentOperation = "";
+      secondNumber = "";
+      result = "";
+      display.value = "";
     });
   </script>
 </body>
