@@ -1,42 +1,78 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Yummy Button</title>
-<style>
-    body {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        height: 100vh;
-        margin: 0;
-        background-color: #f0f0f0; /* Light gray background */
-    }
-    button {
-        padding: 20px 40px;
-        font-size: 24px;
-        background-color: red; /* Red background */
-        color: white; /* White text color */
-        border: none;
-        border-radius: 10px;
-        cursor: pointer;
-    }
-    button:hover {
-        background-color: #b30000; /* Darker red on hover */
-    }
-</style>
+  <title>Walkie Talkie</title>
 </head>
 <body>
+  <button id="talk">Talk</button>
 
-<button id="yummyButton">Press Me!</button>
+  <script>
+    // Initialize the audio context and gain node
+    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    const gainNode = audioContext.createGain();
+    gainNode.gain.value = 1;
 
-<script>
-    const yummyButton = document.getElementById('yummyButton');
-    yummyButton.addEventListener('click', () => {
-        alert("Yummy");
-    });
-</script>
+    // Initialize the microphone stream
+    navigator.mediaDevices.getUserMedia({ audio: true })
+      .then(stream => {
+        // Connect the microphone stream to the gain node
+        const source = audioContext.createMediaStreamSource(stream);
+        source.connect(gainNode);
 
+        // Initialize the button
+        const talkButton = document.getElementById('talk');
+        talkButton.addEventListener('click', () => {
+          // Toggle the gain node between 0 and 1
+          gainNode.gain.value = gainNode.gain.value === 0 ? 1 : 0;
+        });
+
+        // Initialize the audio output
+        const destination = audioContext.destination;
+        gainNode.connect(destination);
+
+        // Initialize the RTCPeerConnection
+        const peerConnection = new RTCPeerConnection();
+
+        // Add the local stream to the peer connection
+        peerConnection.addStream(stream);
+
+        // Add a data channel for sending audio data
+        const dataChannel = peerConnection.createDataChannel("audio");
+
+        // Set up the data channel event listeners
+        dataChannel.onmessage = event => {
+          // Play the audio data when it is received
+          const audioBuffer = audioContext.createBuffer(1, event.data.length, audioContext.sampleRate);
+          audioBuffer.getChannelData(0).set(new Float32Array(event.data));
+          const source = audioContext.createBufferSource();
+          source.buffer = audioBuffer;
+          source.connect(destination);
+          source.start(0);
+        };
+
+        // Set up the peer connection event listeners
+        peerConnection.onicecandidate = event => {
+          if (event.candidate) {
+            // Send the ICE candidate to the other peer
+            // ...
+          }
+        };
+
+        peerConnection.onaddstream = event => {
+          // Add the remote stream to the page
+          const remoteVideo = document.createElement("video");
+          remoteVideo.srcObject = event.stream;
+          remoteVideo.autoplay = true;
+          document.body.appendChild(remoteVideo);
+        };
+
+        // Set up the signaling channel
+        // ...
+
+      })
+      .catch(error => {
+        console.error("Error accessing microphone:", error);
+      });
+  </script>
 </body>
 </html>
